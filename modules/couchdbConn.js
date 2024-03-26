@@ -1,37 +1,40 @@
-async function getDatabaseInfo(dbName) {
+// Import the nano library
+const nano = require("nano");
+
+// Define the URL to your CouchDB instance
+const url = "http://medic:password@localhost:5984";
+
+// Create a Nano instance with the URL
+const nanoInstance = nano(url);
+
+// Function to connect to CouchDB and fetch all documents with their IDs
+const fetchAllDataWithIds = async () => {
     try {
-        // Dynamically import fetch
-        const fetch = await import('node-fetch').then(module => module.default);
+        // Specify the name of the database (table) you want to access
+        const dbName = "medic";
 
-        // Set the CouchDB server URL
-        const couchdbUrl = `http://localhost:5984/${dbName}`;
+        // Use the specified database
+        const db = nanoInstance.db.use(dbName);
+        console.log("Connected successfully to database:", dbName);
 
-        // Set request headers
-        const headers = {
-            'Accept': 'application/json'
-        };
+        // Fetch all documents with their IDs
+        const allDocs = await new Promise((resolve, reject) => {
+            db.list({ include_docs: true }, (err, body) => {
+                if (err) {
+                    console.error("Error fetching documents:", err);
+                    reject(err);
+                } else {
+                    resolve(body.rows.map(row => ({ id: row.id, data: row.doc })));
+                }
+            });
+        });
 
-        // Send GET request to get information about the specified database
-        const response = await fetch(couchdbUrl, { headers });
-
-        if (response.ok) {
-            // Request completed successfully
-            const data = await response.json();
-            return data;
-        } else if (response.status === 404) {
-            // Requested database not found
-            console.log("Requested database not found.");
-            return null;
-        } else {
-            // Other error
-            console.error("Failed to retrieve database info. Status code:", response.status);
-            return null;
-        }
+        return allDocs;
     } catch (error) {
-        // Error occurred
-        console.error("Error:", error.message);
-        return null;
+        // Handle any errors that occur during connection or data fetching
+        console.error("Error:", error);
+        throw error; // Propagate the error to the caller
     }
-}
+};
 
-module.exports = getDatabaseInfo;
+module.exports = fetchAllDataWithIds;

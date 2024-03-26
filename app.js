@@ -6,20 +6,16 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var getDatabaseInfo = require('./modules/couchdbConn.js');
+var fetchDataInJSON = require('./modules/couchdbConn.js');
 var app = express();
 
-const dbName = 'medic';
-getDatabaseInfo(dbName)
-    .then(databaseInfo => {
-        if (databaseInfo) {
-            console.log("Database Info:");
-            console.log(databaseInfo);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error.message);
-    });
+fetchDataInJSON()
+  .then(jsonData => {
+    console.log("Fetched data:", jsonData);
+  })
+  .catch(error => {
+    console.error("Error:", error);
+  });
     
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
