@@ -1,37 +1,37 @@
-//connection couchdb
-const nano = require("nano");
-
-// Define the URL to your CouchDB instance
-const url = "http://localhost:5984";
-
-// Create a Nano instance with the URL
-const nanoInstance = nano(url);
-
-// Connect to the specified database
-const connectCouch = async () => {
+async function getDatabaseInfo(dbName) {
     try {
-        const dbName = "couchdb";
+        // Dynamically import fetch
+        const fetch = await import('node-fetch').then(module => module.default);
 
-        const db = nanoInstance.db.use(dbName);
-        console.log("connected successfully");
-        //querry the data 
-        db.list({include_docs : true},(err,body)=>{
-            if(err){
-                console.error("Error in fetching the data",err);
-                return;
-            }
-            const jsonData = body.rows.map(row => row.doc);
-            console.log('Json data: ' ,jsonData);
-        })
+        // Set the CouchDB server URL
+        const couchdbUrl = `http://localhost:5984/${dbName}`;
 
-        return db;
+        // Set request headers
+        const headers = {
+            'Accept': 'application/json'
+        };
+
+        // Send GET request to get information about the specified database
+        const response = await fetch(couchdbUrl, { headers });
+
+        if (response.ok) {
+            // Request completed successfully
+            const data = await response.json();
+            return data;
+        } else if (response.status === 404) {
+            // Requested database not found
+            console.log("Requested database not found.");
+            return null;
+        } else {
+            // Other error
+            console.error("Failed to retrieve database info. Status code:", response.status);
+            return null;
+        }
     } catch (error) {
-        // Handle any errors that occur during connection
-        console.error("Error connecting to CouchDB:", error);
-        throw error; // Propagate the error to the caller
+        // Error occurred
+        console.error("Error:", error.message);
+        return null;
     }
-};
+}
 
-module.exports = connectCouch;
-
-
+module.exports = getDatabaseInfo;

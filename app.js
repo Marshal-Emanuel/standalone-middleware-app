@@ -6,11 +6,21 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var connectCouch = require('./modules/couchdbConn');
+var getDatabaseInfo = require('./modules/couchdbConn.js');
 var app = express();
 
-connectCouch() //couchdb connection
-
+const dbName = 'medic';
+getDatabaseInfo(dbName)
+    .then(databaseInfo => {
+        if (databaseInfo) {
+            console.log("Database Info:");
+            console.log(databaseInfo);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error.message);
+    });
+    
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
