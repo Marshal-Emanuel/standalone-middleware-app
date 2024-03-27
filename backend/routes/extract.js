@@ -17,7 +17,7 @@ fetchData.get("/", (req, res) => {
                 const hasSha256Key = verifyDataWithSha256(document);
                 
                 if (hasSha256Key) {
-                    // Add the valid document to the array
+                    // Add the document
                     validDocuments.push(document);
                 }
             });
